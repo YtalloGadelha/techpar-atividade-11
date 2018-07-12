@@ -11,3 +11,5 @@ Atividade 11, treinamento TechPar.
   - enviar fotos;
 
 - app-servico
+  - rota para listagem das ordens de serviço;
+  - rota para salvar os dados modificados;
