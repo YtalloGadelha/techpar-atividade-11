@@ -24,6 +24,7 @@ class MainActivity : AppCompatActivity() {
     private fun verificaConexao(contexto: Context): Boolean {
 
         val conectado: Boolean
+        var aviso: String
 
         //Pego a conectividade do contexto o qual o metodo foi chamado
         val cm = contexto.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -34,11 +35,11 @@ class MainActivity : AppCompatActivity() {
         //booleano para saber se há conexão
         conectado = (netInfo != null) && (netInfo.isConnected) && (netInfo.isAvailable)
 
-        //textView.text = "${conectado}"
+        aviso = if (conectado == true) "Conectado" else "Desconetado"
 
-        Toast.makeText(this, "${conectado}", Toast.LENGTH_LONG).show()
+        //informação sobre a conectividade do dispositivo
+        Toast.makeText(this, aviso, Toast.LENGTH_LONG).show()
 
         return conectado
-
     }
 }
