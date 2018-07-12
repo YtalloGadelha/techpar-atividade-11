@@ -18,7 +18,7 @@ app.get("/list", (req, res) => {
       res.status(500).send(err)
       console.log(err)
     })
-  })
+})
 
 app.post("/save", (req, res) => {
   const servico = req.body
