@@ -34,7 +34,6 @@ class MainActivity : AppCompatActivity() {
 
         //referêciando os componentes a partir do identificador
         listView = findViewById(R.id.list_view)
-        //botaoAdicionar = findViewById(R.id.button_adicionar)
 
         //verificaConexao(this)
     }
@@ -83,19 +82,6 @@ class MainActivity : AppCompatActivity() {
 
                         startActivity(intent)
                     }
-
-//                    //Implementando a ação do botão adicionar
-//                    botaoAdicionar.setOnClickListener(View.OnClickListener {
-//
-//                        //Criando a Intent para fazer a navegação
-//                        var intent: Intent = Intent(this, DetalhesActivity::class.java)
-//
-//                        //Instanciando um produto nulo
-//                        var produtoNulo = OrdemServico(0, "", "", "")
-//                        intent.putExtra("produto", produtoNulo)
-//
-//                        startActivity(intent)
-//                    })
                 },
 
                 Response.ErrorListener { error ->
@@ -106,7 +92,6 @@ class MainActivity : AppCompatActivity() {
         //Adicionando a requisição na RequestQueue.
         queue.add(jsonArrayRequest)
     }
-
 
     //Função para verificar a disponibilidade de conexão com a rede
     private fun verificaConexao(contexto: Context): Boolean {
