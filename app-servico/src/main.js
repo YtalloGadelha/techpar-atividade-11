@@ -12,7 +12,7 @@ app.use(morgan("dev"))
 app.use(bodyParser.json())
 
 app.get("/list", (req, res) => {
-    knex("ordemServico").select().then(ret => {
+    knex("ordemServico").where("feedbackOS", "").select().then(ret => {
       res.send(ret)
     }).catch(err => {
       res.status(500).send(err)
