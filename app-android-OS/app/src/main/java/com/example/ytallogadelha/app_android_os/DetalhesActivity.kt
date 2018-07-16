@@ -1,21 +1,35 @@
 package com.example.ytallogadelha.app_android_os
 
+import android.app.Activity
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Matrix
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
+import android.support.v7.widget.Toolbar
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.gson.GsonBuilder
 import org.json.JSONObject
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
 
 class DetalhesActivity : AppCompatActivity() {
 
+    val REQUEST_IMAGE_CAPTURE = 1
+    val REQUEST_TAKE_PHOTO = 1
+    val REQUEST_PICK_IMAGE = 1234
+    lateinit var botaoCaptura: Button
+    lateinit var botaoSelecionar: Button
     lateinit var textId: TextView
     lateinit var textID: TextView
     lateinit var textFuncionario: TextView
@@ -26,10 +40,15 @@ class DetalhesActivity : AppCompatActivity() {
     lateinit var textTitulo: TextView
     lateinit var servico: OrdemServico
     lateinit var servicoAtualizado: OrdemServico
+    lateinit var myToolbar: Toolbar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detalhes)
+
+        myToolbar = findViewById(R.id.my_toolbar) as Toolbar
+        myToolbar.title = "Detalhes da Ordem de Serviço"
+        setSupportActionBar(myToolbar)
 
         //Referenciando os componentes de acordo com os identificadores
         textId = findViewById(R.id.text_id)
@@ -39,7 +58,14 @@ class DetalhesActivity : AppCompatActivity() {
         textDescricao = findViewById(R.id.text_descricao)
         botaoVoltar = findViewById(R.id.button_voltar)
         botaoSalvar = findViewById(R.id.button_salvar)
-        textTitulo = findViewById(R.id.text_titulo)
+        //textTitulo = findViewById(R.id.text_titulo)
+        botaoCaptura = findViewById(R.id.button_captura)
+        botaoSelecionar = findViewById(R.id.button_selecionar)
+
+    }
+
+    override fun onResume() {
+        super.onResume()
 
         //Criando a Intent para capturar os dados enviados pela navegação
         var intent = getIntent()
@@ -99,5 +125,103 @@ class DetalhesActivity : AppCompatActivity() {
             //Adicionando a requisição na RequestQueue.
             queue.add(request)
         })
+
+        //configurando o botão capturar(foto com a câmera)
+        botaoCaptura.setOnClickListener(View.OnClickListener {
+
+            capturarFoto()
+        })
+
+        //configurando o botão selecionar(foto da galeria)
+        botaoSelecionar.setOnClickListener(View.OnClickListener {
+
+            recuperarFoto()
+        })
+    }
+
+    //método chamado quando o aplicativo manda a foto de volta
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
+
+            //recuperando a foto por meio da intent
+            val extras = data?.extras
+
+            val imageBitmap = extras!!.get("data") as Bitmap
+
+            //rotacionando a imagem
+            //objeto que contém a imagem
+            val imagemRotacionada = rotacionarBitmap(imageBitmap, 90)
+
+            salvarBitmap(imagemRotacionada)
+            Toast.makeText(this, "Imagem capturada e salva!!!", Toast.LENGTH_LONG).show()
+        }
+
+        if (requestCode == REQUEST_PICK_IMAGE && resultCode == Activity.RESULT_OK){
+
+            //recuperando a foto selecionada por meio da intent
+            //objeto que contém a imagem
+            val imagemSelecionada = data!!.data
+
+            Toast.makeText(this, "Imagem selecionada!!!", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    //método que delega a atividade de tirar foto para o aplicativo da câmera
+    private fun capturarFoto() {
+
+        //intent que delega a atividade para a câmera
+        val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+
+        if (cameraIntent.resolveActivity(packageManager) != null) {
+
+            startActivityForResult(cameraIntent, REQUEST_TAKE_PHOTO)
+        }
+    }
+
+    private fun recuperarFoto(){
+
+        //intent que acessa a galeria
+        val galeriaIntent  =  Intent(Intent.ACTION_PICK,
+                MediaStore.Images.Media.INTERNAL_CONTENT_URI)
+
+        startActivityForResult(Intent.createChooser(galeriaIntent, "Selecione uma imagem!"), REQUEST_PICK_IMAGE)
+    }
+
+    //método que salva o imagem como JPEG
+    private fun salvarBitmap( bitmap: Bitmap){
+
+        //criando um filename
+        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+        val imageFileName: String = "PNG" + timeStamp + ".png"
+
+        //criando o diretório
+        val diretorio: File = Environment.getExternalStorageDirectory()
+        val destino = File(diretorio, imageFileName)
+
+        try {
+
+            //criando o outputstream para salvar a imagem
+            val saida = FileOutputStream(destino)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, saida)
+            saida.flush()
+            saida.close()
+
+        }catch ( ex: IOException){
+            println("Erro ao salvar a imagem -> ${ex}")
+        }
+    }
+
+    //método para rotacionar o bitmap
+    private fun rotacionarBitmap(original: Bitmap, degrees: Int): Bitmap {
+        val largura = original.width
+        val altura = original.height
+
+        val matrix = Matrix()
+        matrix.preRotate(degrees.toFloat())
+
+        val bitmapRotacionado = Bitmap.createBitmap(original, 0, 0, largura, altura, matrix, true)
+
+        return bitmapRotacionado
     }
 }
