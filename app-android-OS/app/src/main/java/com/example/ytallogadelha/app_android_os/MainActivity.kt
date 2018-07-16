@@ -5,7 +5,7 @@ import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.net.ConnectivityManager
-import android.view.View
+import android.support.v7.widget.Toolbar
 import android.widget.*
 import com.android.volley.Request
 import com.android.volley.RequestQueue
@@ -18,7 +18,7 @@ import com.google.gson.reflect.TypeToken
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var botaoAdicionar: Button
+    //lateinit var botaoAdicionar: Button
     lateinit var listView: ListView
     lateinit var queue: RequestQueue
     lateinit var url: String
@@ -27,10 +27,15 @@ class MainActivity : AppCompatActivity() {
     lateinit var gson: Gson
     lateinit var servicoList: List<OrdemServico>
     lateinit var adapter: ArrayAdapter<OrdemServico>
+    lateinit var myToolbar: Toolbar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        myToolbar = findViewById(R.id.my_toolbar) as Toolbar
+        myToolbar.title = "Ordem de Serviço"
+        setSupportActionBar(myToolbar)
 
         //referêciando os componentes a partir do identificador
         listView = findViewById(R.id.list_view)
