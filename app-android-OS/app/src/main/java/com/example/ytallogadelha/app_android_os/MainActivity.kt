@@ -1,7 +1,11 @@
 package com.example.ytallogadelha.app_android_os
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.location.Address
+import android.location.Geocoder
+import android.location.Location
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.net.ConnectivityManager
@@ -12,13 +16,15 @@ import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.Volley
+import com.google.android.gms.location.*
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
+import java.util.*
+
 
 class MainActivity : AppCompatActivity() {
 
-    //lateinit var botaoAdicionar: Button
     lateinit var listView: ListView
     lateinit var queue: RequestQueue
     lateinit var url: String
@@ -28,26 +34,71 @@ class MainActivity : AppCompatActivity() {
     lateinit var servicoList: List<OrdemServico>
     lateinit var adapter: ArrayAdapter<OrdemServico>
     lateinit var myToolbar: Toolbar
+    lateinit var fusedLocationClient: FusedLocationProviderClient
+    lateinit var mCurrentLocation: Location
+    lateinit var locationRequest: LocationRequest
+    lateinit var locationCallback: LocationCallback
+    lateinit var geocoder: Geocoder
+    var addresses: List<Address> = emptyList()
+    var requestingLocationUpdates: Boolean = true
 
+    @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        //Referenciando a toolbar personalizada
         myToolbar = findViewById(R.id.my_toolbar) as Toolbar
         myToolbar.title = "Ordem de Serviço"
         setSupportActionBar(myToolbar)
 
-        //referêciando os componentes a partir do identificador
+        //Referêciando os componentes a partir do identificador
         listView = findViewById(R.id.list_view)
 
-        //verificaConexao(this)
+        //Criando o cliente do serviço de localização
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        //Pegando a última localização do dispositivo[latitude e longitude]
+        fusedLocationClient.lastLocation
+                .addOnSuccessListener { location : Location? ->
+                    // Tem a última localização conhecida. Em algumas situações raras, isso pode ser nulo.
+                    if (location != null) {
+                        mCurrentLocation = location
+                    }
+                }
+
+        //Criando o objeto locationCallback
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult?) {
+                locationResult ?: return
+                for (location in locationResult.locations){
+                    mCurrentLocation = location
+                    println("Atualizando a localização!")
+
+                    //Pegando o endereço real a partir da latitude e longitude
+                    geocoder = Geocoder(this@MainActivity, Locale.getDefault())
+                    addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+
+                    if (addresses != null && addresses.size > 0 ) {
+                        var local = addresses[0].getAddressLine(0)
+                        println(local)
+
+                    }else{return }
+                }
+            }
+        }
     }
 
     //Função chamada na criação de e restart da activity
     override fun onResume() {
         super.onResume()
 
-        // Instanciando a RequestQueue.
+        verificarConexao(this)
+
+        //Iniciando a atualização de localização
+        if (requestingLocationUpdates) iniciarAtualizacaoLocalizacao()
+
+        //Instanciando a RequestQueue.
         queue = Volley.newRequestQueue(this)
 
         //Criando a URL
@@ -98,8 +149,43 @@ class MainActivity : AppCompatActivity() {
         queue.add(jsonArrayRequest)
     }
 
+    //Função chamada quando a atividade pausa[aplicação vai para background ou outra atividade é iniciada]
+    override fun onPause() {
+        super.onPause()
+
+        //Pausando a atualização da localização
+        stopLocationUpdates()
+    }
+
+    //Função que solicita uma requisição de localização e faz a configuração dos parâmetros[intervalo padrão, rápido e prioridade]
+    fun solicitarLocalizacao() {
+        locationRequest = LocationRequest().apply {
+            interval = 10000
+            fastestInterval = 5000
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
+    }
+
+    //Função que inicia a atualização da localização
+    @SuppressLint("MissingPermission")
+    fun iniciarAtualizacaoLocalizacao() {
+
+        //Solicitando a localização para iniciar o objeto locationRequest
+        solicitarLocalizacao()
+
+        fusedLocationClient.requestLocationUpdates(locationRequest,
+                locationCallback,
+                null /* Looper */)
+    }
+
+    //Função que pausa a atualização da localização
+    fun stopLocationUpdates() {
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+        println("Pausando a atualização da localização!")
+    }
+
     //Função para verificar a disponibilidade de conexão com a rede
-    private fun verificaConexao(contexto: Context): Boolean {
+    private fun verificarConexao(contexto: Context): Boolean {
 
         val conectado: Boolean
         var aviso: String
@@ -120,6 +206,4 @@ class MainActivity : AppCompatActivity() {
 
         return conectado
     }
-
-
 }

@@ -46,6 +46,7 @@ class DetalhesActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detalhes)
 
+        //Referenciando a toolbar personalizada
         myToolbar = findViewById(R.id.my_toolbar) as Toolbar
         myToolbar.title = "Detalhes da Ordem de Serviço"
         setSupportActionBar(myToolbar)
@@ -58,7 +59,6 @@ class DetalhesActivity : AppCompatActivity() {
         textDescricao = findViewById(R.id.text_descricao)
         botaoVoltar = findViewById(R.id.button_voltar)
         botaoSalvar = findViewById(R.id.button_salvar)
-        //textTitulo = findViewById(R.id.text_titulo)
         botaoCaptura = findViewById(R.id.button_captura)
         botaoSelecionar = findViewById(R.id.button_selecionar)
 

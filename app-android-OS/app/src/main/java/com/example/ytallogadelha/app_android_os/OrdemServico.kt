@@ -1,5 +1,6 @@
 package com.example.ytallogadelha.app_android_os
 
+import android.media.Image
 import android.os.Parcel
 import android.os.Parcelable
 
