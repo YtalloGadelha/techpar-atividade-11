@@ -250,7 +250,6 @@ class DetalhesActivity : AppCompatActivity() {
         } catch (e: IOException) {
             Log.v("MainActivityGravar", e.toString())
         }
-
     }
 
     //Função que lê de um arquivo .txt
