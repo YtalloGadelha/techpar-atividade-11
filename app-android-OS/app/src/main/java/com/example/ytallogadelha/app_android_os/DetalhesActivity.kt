@@ -1,6 +1,7 @@
 package com.example.ytallogadelha.app_android_os
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Matrix
@@ -9,6 +10,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.support.v7.widget.Toolbar
+import android.util.Log
 import android.view.View
 import android.widget.*
 import com.android.volley.Request
@@ -17,18 +19,17 @@ import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.Volley
 import com.google.gson.GsonBuilder
 import org.json.JSONObject
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
+import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
 
 class DetalhesActivity : AppCompatActivity() {
 
+    val NOME_ARQUIVO = "salvarLocal"
     val REQUEST_IMAGE_CAPTURE = 1
     val REQUEST_TAKE_PHOTO = 1
     val REQUEST_PICK_IMAGE = 1234
-    lateinit var botaoCaptura: Button
+    lateinit var botaoCapturar: Button
     lateinit var botaoSelecionar: Button
     lateinit var textId: TextView
     lateinit var textID: TextView
@@ -59,7 +60,7 @@ class DetalhesActivity : AppCompatActivity() {
         textDescricao = findViewById(R.id.text_descricao)
         botaoVoltar = findViewById(R.id.button_voltar)
         botaoSalvar = findViewById(R.id.button_salvar)
-        botaoCaptura = findViewById(R.id.button_captura)
+        botaoCapturar = findViewById(R.id.button_capturar)
         botaoSelecionar = findViewById(R.id.button_selecionar)
 
     }
@@ -76,6 +77,9 @@ class DetalhesActivity : AppCompatActivity() {
         textFuncionario.setText(servico.funcionarioOS)
         textDescricao.setText(servico.descricaoOS)
         editFeedback.setText(servico.feedbackOS)
+
+        //vericando se a gravação deu certo
+        println("-> Verificando a gravação -> " + lerDoArquivo())
 
         //Configurando o botão voltar
         botaoVoltar.setOnClickListener(View.OnClickListener {
@@ -124,10 +128,19 @@ class DetalhesActivity : AppCompatActivity() {
             )
             //Adicionando a requisição na RequestQueue.
             queue.add(request)
+
+            //gravando localmente
+            var stringGravacao = ""
+            stringGravacao = "{idOS: ${servicoAtualizado.idOS}, funcionaioOS: ${servicoAtualizado.funcionarioOS}, " +
+                    "descricaoOS: ${servicoAtualizado.descricaoOS}, feedbackOS: ${servicoAtualizado.feedbackOS}}"
+            gravarNoArquivo(stringGravacao)
+            Toast.makeText(this, "Salvo localmente!", Toast.LENGTH_SHORT).show()
+
+
         })
 
         //configurando o botão capturar(foto com a câmera)
-        botaoCaptura.setOnClickListener(View.OnClickListener {
+        botaoCapturar.setOnClickListener(View.OnClickListener {
 
             capturarFoto()
         })
@@ -223,5 +236,57 @@ class DetalhesActivity : AppCompatActivity() {
         val bitmapRotacionado = Bitmap.createBitmap(original, 0, 0, largura, altura, matrix, true)
 
         return bitmapRotacionado
+    }
+
+    //Função que grava em um arquivo .txt
+    private fun gravarNoArquivo(texto: String) {
+
+        try {
+
+            val outputStreamWriter = OutputStreamWriter(openFileOutput("salvarLocal.txt", Context.MODE_PRIVATE))
+            outputStreamWriter.write(texto)
+            outputStreamWriter.close()
+
+        } catch (e: IOException) {
+            Log.v("MainActivityGravar", e.toString())
+        }
+
+    }
+
+    //Função que lê de um arquivo .txt
+    private fun lerDoArquivo(): String {
+        var resultado = ""
+
+        try {
+            //Abrir o arquivo
+            val arquivo = openFileInput("salvarLocal.txt")
+
+            if (arquivo != null) {
+
+                //Ler o arquivo
+                val inputStreamReader = InputStreamReader(arquivo)
+
+                //Gerar buffer do arquivo lido
+                val bufferedReader = BufferedReader(inputStreamReader)
+
+                //Recuperar textos do arquivo
+
+                var linhaArquivo = ""
+
+                while (bufferedReader.readLine() != null) {
+
+                    linhaArquivo = bufferedReader.readLines().toString()
+                    resultado += linhaArquivo
+                }
+
+                arquivo.close()
+            }
+
+        } catch (e: IOException) {
+            Log.v("MainActivity", e.toString())
+        }
+
+        return resultado
+
     }
 }

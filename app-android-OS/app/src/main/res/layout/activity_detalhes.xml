@@ -154,7 +154,7 @@
         app:layout_constraintTop_toBottomOf="@+id/text_descricao" />
 
     <Button
-        android:id="@+id/button_captura"
+        android:id="@+id/button_capturar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="22dp"
@@ -175,6 +175,6 @@
         android:text="Selecionar da Galeria"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="@+id/button_salvar"
-        app:layout_constraintTop_toBottomOf="@+id/button_captura" />
+        app:layout_constraintTop_toBottomOf="@+id/button_capturar" />
 
 </android.support.constraint.ConstraintLayout>
