@@ -16,7 +16,7 @@ app.use(bodyParser.raw({
 }));
 
 app.get("/list", (req, res) => {
-    knex("ordemServico").where("feedbackOS", "").select().then(ret => {
+    knex("ordemServico").where("feedbackOs", "").select().then(ret => {
       res.send(ret)
     }).catch(err => {
       res.status(500).send(err)
