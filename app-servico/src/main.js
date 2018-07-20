@@ -10,6 +10,10 @@ const cors = require("cors")
 app.use(cors())
 app.use(morgan("dev"))
 app.use(bodyParser.json())
+app.use(bodyParser.raw({
+  type: ['application/octet-stream', 'image/*', 'application/pdf', 'audio/*'],
+  limit: 10240 * 1024 // ~10mb
+}));
 
 app.get("/list", (req, res) => {
     knex("ordemServico").where("feedbackOS", "").select().then(ret => {
@@ -21,17 +25,20 @@ app.get("/list", (req, res) => {
 })
 
 app.post("/save", (req, res) => {
-  const servico = req.body
-  //console.log(servico)
-  servico.idOS = null
-  //delete produto.idproduto
-  knex("ordemServico").insert(servico, "idOS").then(ret => {
-      console.log(ret)
-      res.send(ret)
-  }).catch(err => {
-    res.status(500).send(err)
-    console.log(err)
+  const mime = req.header("Content-Type")
+  const nome = req.header("X-Filename")
+  Media.forge({
+    nomemidiaOS: nome,
+    mimemidiaOS: mime,
+    payloadmidiaOS: req.body
   })
+    .save()
+    .then(ret => {
+      res.status(200).send({
+        idmidiaOS: ret.attributes.idmidiaOS
+      })
+    })
+    .catch(errfn(res));
 })
 
 app.put("/save", (req, res) => {
