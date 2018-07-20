@@ -102,7 +102,7 @@ class MainActivity : AppCompatActivity() {
         queue = Volley.newRequestQueue(this)
 
         //Criando a URL
-        url = "http://192.168.0.5:3000/list"
+        url = "http://192.168.25.3:3000/list"
 
         //Criando a requisição. Verbo GET
         jsonArrayRequest = JsonArrayRequest(Request.Method.GET, url, null,

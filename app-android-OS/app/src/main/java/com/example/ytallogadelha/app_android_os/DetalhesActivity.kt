@@ -105,7 +105,7 @@ class DetalhesActivity : AppCompatActivity() {
             var queue = Volley.newRequestQueue(this)
 
             //Criando a URL
-            var url = "http://192.168.0.5:3000/save"
+            var url = "http://192.168.25.3:3000/save"
 
             //Criando a requisição. Verbo PUT
             val httpProtocolo = Request.Method.PUT
