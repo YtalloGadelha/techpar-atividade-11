@@ -25,7 +25,7 @@ import java.util.*
 
 class DetalhesActivity : AppCompatActivity() {
 
-    val NOME_ARQUIVO = "salvarLocal"
+    val NOME_ARQUIVO = "arquivoLocal.txt"
     val REQUEST_IMAGE_CAPTURE = 1
     val REQUEST_TAKE_PHOTO = 1
     val REQUEST_PICK_IMAGE = 1234
@@ -38,7 +38,6 @@ class DetalhesActivity : AppCompatActivity() {
     lateinit var textDescricao: TextView
     lateinit var botaoVoltar: Button
     lateinit var botaoSalvar: Button
-    lateinit var textTitulo: TextView
     lateinit var servico: OrdemServico
     lateinit var servicoAtualizado: OrdemServico
     lateinit var myToolbar: Toolbar
@@ -68,7 +67,7 @@ class DetalhesActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        //Criando a Intent para capturar os dados enviados pela navegação
+        //Criação da Intent para capturar os dados enviados pela navegação
         var intent = getIntent()
         servico = intent.getParcelableExtra("servico")
 
@@ -78,17 +77,14 @@ class DetalhesActivity : AppCompatActivity() {
         textDescricao.setText(servico.descricaoOS)
         editFeedback.setText(servico.feedbackOS)
 
-        //vericando se a gravação deu certo
-        println("-> Verificando a gravação -> " + lerDoArquivo())
-
-        //Configurando o botão voltar
+        //Configuração do botão voltar
         botaoVoltar.setOnClickListener(View.OnClickListener {
 
             //Finalizando a atividade
             finish()
         })
 
-        //Configurando o botão salvar
+        //Configuração do botão salvar
         botaoSalvar.setOnClickListener(View.OnClickListener {
 
             servicoAtualizado = servico
@@ -99,19 +95,19 @@ class DetalhesActivity : AppCompatActivity() {
             //Populando o feedback com as informações passadas
             servicoAtualizado.feedbackOS = editFeedback.text.toString()
 
-            //Criando string no formato de json a partir do objeto produtoSalvo
+            //Criação da string no formato de json a partir do objeto produtoSalvo
             val stringPoduto: String = gson.toJson(servicoAtualizado)
 
-            //Criando json a partir de uma string
+            //Criação do json a partir de uma string
             val jsonObject = JSONObject(stringPoduto)
 
             // Instanciando a RequestQueue.
             var queue = Volley.newRequestQueue(this)
 
-            //Criando a URL
-            var url = "http://192.168.25.3:3000/save"
+            //Criação da URL
+            var url = "http://192.168.0.5:3000/save"
 
-            //Criando a requisição. Verbo PUT
+            //Criação da requisição. Verbo PUT
             val httpProtocolo = Request.Method.PUT
             val request = JsonObjectRequest( httpProtocolo, url, jsonObject,
                     Response.Listener { response ->
@@ -126,64 +122,58 @@ class DetalhesActivity : AppCompatActivity() {
                         finish()
                     }
             )
-            //Adicionando a requisição na RequestQueue.
+            //Adição da requisição na RequestQueue.
             queue.add(request)
 
-            //gravando localmente
-            var stringGravacao = ""
-            stringGravacao = "{idOS: ${servicoAtualizado.idOS}, funcionaioOS: ${servicoAtualizado.funcionarioOS}, " +
-                    "descricaoOS: ${servicoAtualizado.descricaoOS}, feedbackOS: ${servicoAtualizado.feedbackOS}}"
-            gravarNoArquivo(stringGravacao)
-            Toast.makeText(this, "Salvo localmente!", Toast.LENGTH_SHORT).show()
-
-
+            //Gravação local dos dados que foram enviados ao servidor
+            gravarNoArquivo(stringPoduto)
         })
 
-        //configurando o botão capturar(foto com a câmera)
+        //Configuração do botão capturar(foto com a câmera)
         botaoCapturar.setOnClickListener(View.OnClickListener {
 
             capturarFoto()
         })
 
-        //configurando o botão selecionar(foto da galeria)
+        //Configuração do botão selecionar(foto da galeria)
         botaoSelecionar.setOnClickListener(View.OnClickListener {
 
             recuperarFoto()
         })
     }
 
-    //método chamado quando o aplicativo manda a foto de volta
+    //Função chamado quando o aplicativo manda a foto de volta
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
 
-            //recuperando a foto por meio da intent
+            //Recuperação da foto por meio da intent
             val extras = data?.extras
 
             val imageBitmap = extras!!.get("data") as Bitmap
 
-            //rotacionando a imagem
-            //objeto que contém a imagem
+            //Rotacionando a imagem
+            //Objeto que contém a imagem
             val imagemRotacionada = rotacionarBitmap(imageBitmap, 90)
 
             salvarBitmap(imagemRotacionada)
-            Toast.makeText(this, "Imagem capturada e salva!!!", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Imagem capturada e salva!!!", Toast.LENGTH_SHORT).show()
         }
 
         if (requestCode == REQUEST_PICK_IMAGE && resultCode == Activity.RESULT_OK){
 
-            //recuperando a foto selecionada por meio da intent
-            //objeto que contém a imagem
+            //Recuperação da foto selecionada por meio da intent
+            //Objeto que contém a imagem
             val imagemSelecionada = data!!.data
 
-            Toast.makeText(this, "Imagem selecionada!!!", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Imagem selecionada!!!", Toast.LENGTH_SHORT).show()
         }
     }
 
-    //método que delega a atividade de tirar foto para o aplicativo da câmera
+    //Função que delega a atividade de tirar foto para o aplicativo da câmera
     private fun capturarFoto() {
 
-        //intent que delega a atividade para a câmera
+        //Intent que delega a atividade para a câmera
         val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
 
         if (cameraIntent.resolveActivity(packageManager) != null) {
@@ -192,6 +182,7 @@ class DetalhesActivity : AppCompatActivity() {
         }
     }
 
+    //Função que recupera uma foto da galeria
     private fun recuperarFoto(){
 
         //intent que acessa a galeria
@@ -201,20 +192,20 @@ class DetalhesActivity : AppCompatActivity() {
         startActivityForResult(Intent.createChooser(galeriaIntent, "Selecione uma imagem!"), REQUEST_PICK_IMAGE)
     }
 
-    //método que salva o imagem como JPEG
+    //Função que salva a imagem como PNG
     private fun salvarBitmap( bitmap: Bitmap){
 
-        //criando um filename
+        //Criação do filename
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
         val imageFileName: String = "PNG" + timeStamp + ".png"
 
-        //criando o diretório
+        //Criação do diretório
         val diretorio: File = Environment.getExternalStorageDirectory()
         val destino = File(diretorio, imageFileName)
 
         try {
 
-            //criando o outputstream para salvar a imagem
+            //Criação do outputstream para salvar a imagem
             val saida = FileOutputStream(destino)
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, saida)
             saida.flush()
@@ -225,7 +216,7 @@ class DetalhesActivity : AppCompatActivity() {
         }
     }
 
-    //método para rotacionar o bitmap
+    //Função que rotaciona o bitmap
     private fun rotacionarBitmap(original: Bitmap, degrees: Int): Bitmap {
         val largura = original.width
         val altura = original.height
@@ -243,9 +234,14 @@ class DetalhesActivity : AppCompatActivity() {
 
         try {
 
-            val outputStreamWriter = OutputStreamWriter(openFileOutput("salvarLocal.txt", Context.MODE_PRIVATE))
+            //Criação do outputstream com o arquivo .txt
+            val outputStreamWriter = OutputStreamWriter(openFileOutput(NOME_ARQUIVO, Context.MODE_APPEND))
             outputStreamWriter.write(texto)
             outputStreamWriter.close()
+            println("Gravado com sucesso!!!")
+
+            //Ler do arquivo .txt para confirmar salvamento
+            lerDoArquivo()
 
         } catch (e: IOException) {
             Log.v("MainActivityGravar", e.toString())
@@ -253,39 +249,65 @@ class DetalhesActivity : AppCompatActivity() {
     }
 
     //Função que lê de um arquivo .txt
-    private fun lerDoArquivo(): String {
+    private fun lerDoArquivo() {
+
         var resultado = ""
 
         try {
-            //Abrir o arquivo
-            val arquivo = openFileInput("salvarLocal.txt")
+            //Abertura do arquivo
+            val arquivo = openFileInput(NOME_ARQUIVO)
 
             if (arquivo != null) {
 
-                //Ler o arquivo
+                //Criação do inputstream para ler o arquivo
                 val inputStreamReader = InputStreamReader(arquivo)
 
                 //Gerar buffer do arquivo lido
                 val bufferedReader = BufferedReader(inputStreamReader)
 
-                //Recuperar textos do arquivo
-
+                //Recuperar o que está inscrito no arquivo .txt
                 var linhaArquivo = ""
 
                 while (bufferedReader.readLine() != null) {
 
-                    linhaArquivo = bufferedReader.readLines().toString()
+                    linhaArquivo = bufferedReader.readText()
                     resultado += linhaArquivo
+
                 }
 
                 arquivo.close()
             }
 
         } catch (e: IOException) {
-            Log.v("MainActivity", e.toString())
+            Log.v("DetalhesActivityLer", e.toString())
         }
 
-        return resultado
-
+        println(resultado)
     }
+
+    /*
+     var stream: ByteArrayOutputStream =  ByteArrayOutputStream()
+            imagemRotacionada.compress(Bitmap.CompressFormat.PNG, 100, stream)
+            var imgByteArray: ByteArray? = stream.toByteArray()
+
+            var imgArray: String = Base64.encodeToString(imgByteArray, Base64.DEFAULT)
+            var jsonImg: JSONObject = JSONObject().put("imgByteArray", imgArray)
+
+            println("Testando upload -> ${jsonImg}")
+
+            var url2 = "http://192.168.0.5:3000/foto"
+            val requestFoto = JsonObjectRequest( Request.Method.POST, url2, jsonImg,
+                    Response.Listener { response ->
+
+                        Toast.makeText(this, "Imagem salva com sucesso!", Toast.LENGTH_SHORT).show()
+                        finish()
+                    },
+
+                    Response.ErrorListener { error ->
+
+                        Toast.makeText(this, "Imagem -> BD bugado", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
+            )
+    * */
 }

@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity() {
         //Referêciando os componentes a partir do identificador
         listView = findViewById(R.id.list_view)
 
-        //Criando o cliente do serviço de localização
+        //Criação do cliente do serviço de localização
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         //Pegando a última localização do dispositivo[latitude e longitude]
@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
-        //Criando o objeto locationCallback
+        //Criação do objeto locationCallback
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult?) {
                 locationResult ?: return
@@ -101,10 +101,10 @@ class MainActivity : AppCompatActivity() {
         //Instanciando a RequestQueue.
         queue = Volley.newRequestQueue(this)
 
-        //Criando a URL
-        url = "http://192.168.25.3:3000/list"
+        //Criação da URL
+        url = "http://192.168.0.5:3000/list"
 
-        //Criando a requisição. Verbo GET
+        //Criação da requisição. Verbo GET
         jsonArrayRequest = JsonArrayRequest(Request.Method.GET, url, null,
                 Response.Listener { response ->
 
@@ -116,23 +116,23 @@ class MainActivity : AppCompatActivity() {
                     //Instanciando o gson para converter json em objeto
                     gson = GsonBuilder().setPrettyPrinting().create()
 
-                    //Criando a lista de produtos
+                    //Criação da lista de produtos
                     servicoList = gson.fromJson(jsonList, object : TypeToken<List<OrdemServico>>() {}.type)
 
-                    //Criando o adapter necessário ao listView
+                    //Criação do adapter necessário ao listView
                     adapter = ArrayAdapter<OrdemServico>(
                             this, // Context
                             android.R.layout.simple_list_item_1, // Layout
                             servicoList // List
                     )
 
-                    //Adiconando o adapter ao listView
+                    //Adição do adapter ao listView
                     listView.adapter = adapter
 
-                    // Configurando o click listener da ListView
+                    //Configuração do click listener da ListView
                     listView.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
 
-                        //Criando a Intent para fazer a navegação e passar os dados entre as atividades
+                        //Criação da Intent para fazer a navegação e passar os dados entre as atividades
                         var intent: Intent = Intent(this, DetalhesActivity::class.java)
                         intent.putExtra("servico", servicoList[position])
 
@@ -145,7 +145,7 @@ class MainActivity : AppCompatActivity() {
                     println("Erro: ${error}")
                 }
         )
-        //Adicionando a requisição na RequestQueue.
+        //Adição da requisição na RequestQueue.
         queue.add(jsonArrayRequest)
     }
 
@@ -190,10 +190,10 @@ class MainActivity : AppCompatActivity() {
         val conectado: Boolean
         var aviso: String
 
-        //Pego a conectividade do contexto o qual o metodo foi chamado
+        //Pegando a conectividade do contexto o qual o metodo foi chamado
         val cm = contexto.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
-        //Crio o objeto netInfo que recebe as informacoes da Network
+        //Criação do objeto netInfo que recebe as informacoes da Network
         val netInfo = cm.activeNetworkInfo
 
         //booleano para saber se há conexão
@@ -202,7 +202,7 @@ class MainActivity : AppCompatActivity() {
         aviso = if (conectado == true) "Conectado" else "Desconetado"
 
         //informação sobre a conectividade do dispositivo
-        Toast.makeText(this, aviso, Toast.LENGTH_LONG).show()
+        Toast.makeText(this, aviso, Toast.LENGTH_SHORT).show()
 
         return conectado
     }
