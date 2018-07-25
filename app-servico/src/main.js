@@ -27,18 +27,18 @@ app.get("/list", (req, res) => {
 app.post("/save", (req, res) => {
   const mime = req.header("Content-Type")
   const nome = req.header("X-Filename")
-  Media.forge({
-    nomemidiaOS: nome,
-    mimemidiaOS: mime,
-    payloadmidiaOS: req.body
-  })
-    .save()
-    .then(ret => {
-      res.status(200).send({
-        idmidiaOS: ret.attributes.idmidiaOS
+  knex("midiaOS").insert({
+    nomemidiaOS:nome,
+    mimemidiaOS:mime,
+    payloadmidiaOS:req.body
+  },"idmidiaOS").then(ret => {
+      res.send({
+      idmidiaOS:ret[0]
       })
+    }).catch(err => {
+      res.status(500).send(err)
+      console.log(err)
     })
-    .catch(errfn(res));
 })
 
 app.put("/save", (req, res) => {
