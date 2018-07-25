@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.support.v7.widget.Toolbar
+import android.util.ArrayMap
 import android.util.Log
 import android.view.View
 import android.widget.*
@@ -20,8 +21,13 @@ import com.android.volley.toolbox.Volley
 import com.google.gson.GsonBuilder
 import org.json.JSONObject
 import java.io.*
+import java.net.HttpURLConnection
+import java.net.MalformedURLException
+import java.net.SocketTimeoutException
+import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 class DetalhesActivity : AppCompatActivity() {
 
@@ -41,6 +47,8 @@ class DetalhesActivity : AppCompatActivity() {
     lateinit var servico: OrdemServico
     lateinit var servicoAtualizado: OrdemServico
     lateinit var myToolbar: Toolbar
+    lateinit var imagemRotacionada: Bitmap
+    lateinit var imageFileName: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,7 +76,7 @@ class DetalhesActivity : AppCompatActivity() {
         super.onResume()
 
         //Criação da Intent para capturar os dados enviados pela navegação
-        var intent = getIntent()
+        val intent = getIntent()
         servico = intent.getParcelableExtra("servico")
 
         //Populando os componentes com os dados passados pela Intent
@@ -102,10 +110,10 @@ class DetalhesActivity : AppCompatActivity() {
             val jsonObject = JSONObject(stringPoduto)
 
             // Instanciando a RequestQueue.
-            var queue = Volley.newRequestQueue(this)
+            val queue = Volley.newRequestQueue(this)
 
             //Criação da URL
-            var url = "http://192.168.0.5:3000/save"
+            val url = "http://192.168.0.5:3000/save"
 
             //Criação da requisição. Verbo PUT
             val httpProtocolo = Request.Method.PUT
@@ -126,7 +134,11 @@ class DetalhesActivity : AppCompatActivity() {
             queue.add(request)
 
             //Gravação local dos dados que foram enviados ao servidor
-            gravarNoArquivo(stringPoduto)
+            //gravarNoArquivo(stringPoduto)
+
+            //testando upload da foto
+            chamarAsyncTask(imagemRotacionada, imageFileName)
+
         })
 
         //Configuração do botão capturar(foto com a câmera)
@@ -154,7 +166,7 @@ class DetalhesActivity : AppCompatActivity() {
 
             //Rotacionando a imagem
             //Objeto que contém a imagem
-            val imagemRotacionada = rotacionarBitmap(imageBitmap, 90)
+            imagemRotacionada = rotacionarBitmap(imageBitmap, 90)
 
             salvarBitmap(imagemRotacionada)
             Toast.makeText(this, "Imagem capturada e salva!!!", Toast.LENGTH_SHORT).show()
@@ -197,7 +209,7 @@ class DetalhesActivity : AppCompatActivity() {
 
         //Criação do filename
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-        val imageFileName: String = "PNG" + timeStamp + ".png"
+        imageFileName = "JPEG" + timeStamp + ".jpeg"
 
         //Criação do diretório
         val diretorio: File = Environment.getExternalStorageDirectory()
@@ -207,7 +219,7 @@ class DetalhesActivity : AppCompatActivity() {
 
             //Criação do outputstream para salvar a imagem
             val saida = FileOutputStream(destino)
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, saida)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, saida)
             saida.flush()
             saida.close()
 
@@ -310,4 +322,83 @@ class DetalhesActivity : AppCompatActivity() {
                     }
             )
     * */
+
+    //Função responsável pela requisição POST da imagem
+    private fun postRequest(targetURL: String, bitmap: Bitmap): String? {
+
+    val url: URL
+    var connection: HttpURLConnection? = null
+
+    try {
+
+        //Criação da conexão
+        url = URL(targetURL)
+        connection = url.openConnection() as HttpURLConnection?
+        connection?.requestMethod = "POST"
+        //connection?.setRequestProperty("Content-Type","application/image/*")
+
+        connection?.doOutput = true
+
+        //Enviando requisição
+        val wr: ByteArrayOutputStream = connection!!.outputStream as ByteArrayOutputStream
+
+        connection.setChunkedStreamingMode(0)
+
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, wr)
+
+        val imgByteArray: ByteArray? = wr.toByteArray()
+
+        wr.write(imgByteArray)
+        wr.flush()
+        wr.close()
+
+        //Obtendo a resposta
+        val inputStream: InputStream = connection.inputStream
+        val rd: BufferedReader = BufferedReader(InputStreamReader(inputStream))
+        var line: String
+        val response: StringBuffer = StringBuffer()
+        while (rd.readLine() != null) {
+            line = rd.readText()
+            response.append(line)
+            response.append('\r')
+        }
+
+        rd.close()
+        return response.toString()
+
+        }catch(error: MalformedURLException) {
+            //Handles an incorrectly entered URL
+            println(error.stackTrace)
+            return null
+
+        }
+        catch(error: SocketTimeoutException) {
+            //Handles URL access timeout.
+            println(error.stackTrace)
+            return null
+
+        }
+        catch (error: IOException ) {
+            //Lida com os erros de entra e saída
+            println(error.stackTrace)
+            return null
+
+        } finally {
+
+        if (connection != null) {
+            connection.disconnect()
+        }
+    }
 }
+
+    //Função que chama a classe PostRequest, responsável por fazer a requisição POST para salvar a imagem no servidor
+    private fun chamarAsyncTask(bitmap: Bitmap, nomeImagem: String) {
+
+        val post = PostRequest()
+        Log.i("AsyncTask", "AsyncTask sendo chamado Thread: " + Thread.currentThread().name)
+
+        PostRequest.setNome(nomeImagem)
+        post.execute(bitmap)
+    }
+}
+
