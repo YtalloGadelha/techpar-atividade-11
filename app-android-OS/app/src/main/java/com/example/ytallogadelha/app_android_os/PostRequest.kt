@@ -8,9 +8,13 @@ import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.SocketTimeoutException
 import java.net.URL
+import java.util.*
+import kotlin.collections.ArrayList
 
 //Classe responsável por fazer a requisição POST em uma thread secundária para fazer o upload de uma imagem no servidor
-class PostRequest : AsyncTask<Bitmap, Void, String>() {
+class PostRequest : AsyncTask<ArrayList<Bitmap>, Void, String>() {
+
+    var arrayList: ArrayList<Bitmap>? = ArrayList()
 
     //Criação da variável estática que receberá o nome da foto
     companion object {
@@ -30,7 +34,7 @@ class PostRequest : AsyncTask<Bitmap, Void, String>() {
     }
 
     //Função executada em uma thread separada para evitar o travamento da tela do usuário
-    override fun doInBackground(vararg p0: Bitmap): String? {
+    override fun doInBackground(vararg p0: ArrayList<Bitmap>?): String? {
 
         var connection: HttpURLConnection? = null
 
@@ -49,7 +53,11 @@ class PostRequest : AsyncTask<Bitmap, Void, String>() {
             //Criação do stream para depois fazer o envio da imagem
             val outputStream: OutputStream? = connection!!.outputStream
 
-            p0[0]!!.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+            val array = p0.first()
+
+            val bitmap = array!!.get(0)
+
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
 
             //Conversões de tipo
             val imgString: String = outputStream!!.toString()

@@ -10,7 +10,6 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.support.v7.widget.Toolbar
-import android.util.ArrayMap
 import android.util.Log
 import android.view.View
 import android.widget.*
@@ -51,6 +50,7 @@ class DetalhesActivity : AppCompatActivity() {
     lateinit var imageFileName: String
     lateinit var imagemSelecionada: Bitmap
     lateinit var imagemNome: String
+    var array: ArrayList<Bitmap>? = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -142,14 +142,20 @@ class DetalhesActivity : AppCompatActivity() {
             imagemNome = "idOS:${servicoAtualizado.idOS}"
 
             //Verificando qual imagem vai ser salva. A capturada é priorizada!!!
-            if(imagemRotacionada == null){
+//            if(imagemRotacionada == null){
+//
+//                chamarAsyncTask(imagemSelecionada, imagemNome)
+//            }
+//            else{
+//
+//                chamarAsyncTask(imagemRotacionada!!, imagemNome)
+//            }
 
-                chamarAsyncTask(imagemSelecionada, imagemNome)
-            }
-            else{
+            //var array: ArrayList<Bitmap>
+            array!!.add(imagemSelecionada)
+            array!!.add(imagemRotacionada!!)
 
-                chamarAsyncTask(imagemRotacionada!!, imagemNome)
-            }
+            chamarAsyncTask(array!!, imagemNome)
         })
 
         //Configuração do botão capturar(foto com a câmera)
@@ -406,7 +412,7 @@ class DetalhesActivity : AppCompatActivity() {
 }
 
     //Função que chama a classe PostRequest, responsável por fazer a requisição POST para salvar a imagem no servidor
-    private fun chamarAsyncTask(bitmap: Bitmap, nomeImagem: String) {
+    private fun chamarAsyncTask(bitmap: ArrayList<Bitmap>, nomeImagem: String) {
 
         val post = PostRequest()
         Log.i("AsyncTask", "AsyncTask sendo chamado Thread: " + Thread.currentThread().name)
