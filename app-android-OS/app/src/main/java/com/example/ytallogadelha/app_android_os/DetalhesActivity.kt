@@ -49,6 +49,8 @@ class DetalhesActivity : AppCompatActivity() {
     lateinit var myToolbar: Toolbar
     lateinit var imagemRotacionada: Bitmap
     lateinit var imageFileName: String
+    lateinit var imagemSelecionada: Bitmap
+    lateinit var imagemNome: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -137,7 +139,9 @@ class DetalhesActivity : AppCompatActivity() {
             //gravarNoArquivo(stringPoduto)
 
             //testando upload da foto
-            chamarAsyncTask(imagemRotacionada, imageFileName)
+            imagemNome = "idOS:${servicoAtualizado.idOS}"
+            chamarAsyncTask(imagemRotacionada, imagemNome)
+            //chamarAsyncTask(imagemSelecionada, imagemNome)
 
         })
 
@@ -176,7 +180,10 @@ class DetalhesActivity : AppCompatActivity() {
 
             //Recuperação da foto selecionada por meio da intent
             //Objeto que contém a imagem
-            val imagemSelecionada = data!!.data
+            val imagemSelecionadaURI = data!!.data
+
+            imagemSelecionada = MediaStore.Images.Media.getBitmap(this.contentResolver, imagemSelecionadaURI)
+            //imageFileName =
 
             Toast.makeText(this, "Imagem selecionada!!!", Toast.LENGTH_SHORT).show()
         }
