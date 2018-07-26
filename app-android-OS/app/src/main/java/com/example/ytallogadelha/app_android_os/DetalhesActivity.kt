@@ -47,7 +47,7 @@ class DetalhesActivity : AppCompatActivity() {
     lateinit var servico: OrdemServico
     lateinit var servicoAtualizado: OrdemServico
     lateinit var myToolbar: Toolbar
-    lateinit var imagemRotacionada: Bitmap
+    var imagemRotacionada: Bitmap? = null
     lateinit var imageFileName: String
     lateinit var imagemSelecionada: Bitmap
     lateinit var imagemNome: String
@@ -138,11 +138,18 @@ class DetalhesActivity : AppCompatActivity() {
             //Gravação local dos dados que foram enviados ao servidor
             //gravarNoArquivo(stringPoduto)
 
-            //testando upload da foto
+            //Salvando a foto no servidor
             imagemNome = "idOS:${servicoAtualizado.idOS}"
-            chamarAsyncTask(imagemRotacionada, imagemNome)
-            //chamarAsyncTask(imagemSelecionada, imagemNome)
 
+            //Verificando qual imagem vai ser salva. A capturada é priorizada!!!
+            if(imagemRotacionada == null){
+
+                chamarAsyncTask(imagemSelecionada, imagemNome)
+            }
+            else{
+
+                chamarAsyncTask(imagemRotacionada!!, imagemNome)
+            }
         })
 
         //Configuração do botão capturar(foto com a câmera)
@@ -172,7 +179,7 @@ class DetalhesActivity : AppCompatActivity() {
             //Objeto que contém a imagem
             imagemRotacionada = rotacionarBitmap(imageBitmap, 90)
 
-            salvarBitmap(imagemRotacionada)
+            salvarBitmap(imagemRotacionada!!)
             Toast.makeText(this, "Imagem capturada e salva!!!", Toast.LENGTH_SHORT).show()
         }
 
