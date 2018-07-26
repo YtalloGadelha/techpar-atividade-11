@@ -48,7 +48,7 @@ class DetalhesActivity : AppCompatActivity() {
     lateinit var myToolbar: Toolbar
     var imagemRotacionada: Bitmap? = null
     lateinit var imageFileName: String
-    lateinit var imagemSelecionada: Bitmap
+    var imagemSelecionada: Bitmap? = null
     lateinit var imagemNome: String
     var array: ArrayList<Bitmap>? = ArrayList()
 
@@ -97,78 +97,89 @@ class DetalhesActivity : AppCompatActivity() {
         //Configuração do botão salvar
         botaoSalvar.setOnClickListener(View.OnClickListener {
 
-            servicoAtualizado = servico
+            //Configuração do botão capturar(foto com a câmera)
+            botaoCapturar.setOnClickListener(View.OnClickListener {
 
-            //Instanciando o gson
-            val gson = GsonBuilder().setPrettyPrinting().create()
+                capturarFoto()
+            })
 
-            //Populando o feedback com as informações passadas
-            servicoAtualizado.feedbackOS = editFeedback.text.toString()
+            //Configuração do botão selecionar(foto da galeria)
+            botaoSelecionar.setOnClickListener(View.OnClickListener {
 
-            //Criação da string no formato de json a partir do objeto produtoSalvo
-            val stringPoduto: String = gson.toJson(servicoAtualizado)
+                recuperarFoto()
+            })
 
-            //Criação do json a partir de uma string
-            val jsonObject = JSONObject(stringPoduto)
+            if(imagemSelecionada != null || imagemRotacionada != null){
 
-            // Instanciando a RequestQueue.
-            val queue = Volley.newRequestQueue(this)
+                servicoAtualizado = servico
 
-            //Criação da URL
-            val url = "http://192.168.0.5:3000/save"
+                //Instanciando o gson
+                val gson = GsonBuilder().setPrettyPrinting().create()
 
-            //Criação da requisição. Verbo PUT
-            val httpProtocolo = Request.Method.PUT
-            val request = JsonObjectRequest( httpProtocolo, url, jsonObject,
-                    Response.Listener { response ->
+                //Populando o feedback com as informações passadas
+                servicoAtualizado.feedbackOS = editFeedback.text.toString()
 
-                        Toast.makeText(this, "Salvo com sucesso!", Toast.LENGTH_SHORT).show()
-                        finish()
-                    },
+                //Criação da string no formato de json a partir do objeto produtoSalvo
+                val stringPoduto: String = gson.toJson(servicoAtualizado)
 
-                    Response.ErrorListener { error ->
+                //Criação do json a partir de uma string
+                val jsonObject = JSONObject(stringPoduto)
 
-                        Toast.makeText(this, "BD bugado", Toast.LENGTH_SHORT).show()
-                        finish()
-                    }
-            )
-            //Adição da requisição na RequestQueue.
-            queue.add(request)
+                // Instanciando a RequestQueue.
+                val queue = Volley.newRequestQueue(this)
 
-            //Gravação local dos dados que foram enviados ao servidor
-            //gravarNoArquivo(stringPoduto)
+                //Criação da URL
+                val url = "http://192.168.0.5:3000/save"
 
-            //Salvando a foto no servidor
-            imagemNome = "idOS:${servicoAtualizado.idOS}"
+                //Criação da requisição. Verbo PUT
+                val httpProtocolo = Request.Method.PUT
+                val request = JsonObjectRequest(httpProtocolo, url, jsonObject,
+                        Response.Listener { response ->
 
-            //Verificando qual imagem vai ser salva. A capturada é priorizada!!!
-//            if(imagemRotacionada == null){
-//
-//                chamarAsyncTask(imagemSelecionada, imagemNome)
-//            }
-//            else{
-//
-//                chamarAsyncTask(imagemRotacionada!!, imagemNome)
-//            }
+                            Toast.makeText(this, "Salvo com sucesso!", Toast.LENGTH_SHORT).show()
+                            finish()
+                        },
 
-            //var array: ArrayList<Bitmap>
-            array!!.add(imagemSelecionada)
-            array!!.add(imagemRotacionada!!)
+                        Response.ErrorListener { error ->
 
-            chamarAsyncTask(array!!, imagemNome)
+                            Toast.makeText(this, "BD bugado", Toast.LENGTH_SHORT).show()
+                            finish()
+                        }
+                )
+                //Adição da requisição na RequestQueue.
+                queue.add(request)
+
+                //Gravação local dos dados que foram enviados ao servidor
+                //gravarNoArquivo(stringPoduto)
+
+                //Salvando a foto no servidor
+                imagemNome = "idOS:${servicoAtualizado.idOS}"
+
+                //Verificando qual imagem vai ser salva!!!
+                if (imagemRotacionada == null) {
+
+                    array!!.add(imagemSelecionada!!)
+                    //chamarAsyncTask(imagemSelecionada, imagemNome)
+                } else if (imagemSelecionada == null) {
+
+                    array!!.add(imagemRotacionada!!)
+                    //chamarAsyncTask(imagemRotacionada!!, imagemNome)
+                } else {
+
+                    array!!.add(imagemSelecionada!!)
+                    array!!.add(imagemRotacionada!!)
+                }
+
+                chamarAsyncTask(array!!, imagemNome)
+
+            }
+
+            if(imagemSelecionada == null && imagemRotacionada == null){
+
+                Toast.makeText(this, "Selecione ou capture uma imagem!!!", Toast.LENGTH_SHORT).show()
+            }
         })
 
-        //Configuração do botão capturar(foto com a câmera)
-        botaoCapturar.setOnClickListener(View.OnClickListener {
-
-            capturarFoto()
-        })
-
-        //Configuração do botão selecionar(foto da galeria)
-        botaoSelecionar.setOnClickListener(View.OnClickListener {
-
-            recuperarFoto()
-        })
     }
 
     //Função chamado quando o aplicativo manda a foto de volta

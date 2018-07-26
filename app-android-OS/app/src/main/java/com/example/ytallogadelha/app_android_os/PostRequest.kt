@@ -20,6 +20,7 @@ class PostRequest : AsyncTask<ArrayList<Bitmap>, Void, String>() {
     companion object {
 
         lateinit var nomeImagem: String
+        lateinit var response: StringBuffer
 
         fun setNome(nome: String){
             nomeImagem = nome
@@ -38,51 +39,58 @@ class PostRequest : AsyncTask<ArrayList<Bitmap>, Void, String>() {
 
         var connection: HttpURLConnection? = null
 
+        val array = p0.first()
+
+        val tamanho = (array!!.size) - 1
+
         try {
 
-            //Criação da conexão
-            val url:URL = URL("http://192.168.0.5:3000/save")
-            connection = url.openConnection() as HttpURLConnection?
-            connection?.requestMethod = "POST"
+            for(i in 0..tamanho){
 
-            //Configuração das propriedades
-            connection?.setRequestProperty("Content-Type","image/jpeg")
-            connection?.setRequestProperty("X-Filename", nomeImagem)
-            connection?.doOutput = true
+                //Criação da conexão
+                val url:URL = URL("http://192.168.0.5:3000/save")
+                connection = url.openConnection() as HttpURLConnection?
+                connection?.requestMethod = "POST"
 
-            //Criação do stream para depois fazer o envio da imagem
-            val outputStream: OutputStream? = connection!!.outputStream
+                //Configuração das propriedades
+                connection?.setRequestProperty("Content-Type","image/jpeg")
+                connection?.setRequestProperty("X-Filename", nomeImagem)
+                connection?.doOutput = true
 
-            val array = p0.first()
+                //Criação do stream para depois fazer o envio da imagem
+                val outputStream: OutputStream? = connection!!.outputStream
 
-            val bitmap = array!!.get(0)
 
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+                val bitmap = array!![i]
 
-            //Conversões de tipo
-            val imgString: String = outputStream!!.toString()
-            val imgByteArray: ByteArray = imgString.toByteArray()
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
 
-            //Enviando a imagem ao servidor
-            outputStream.write(imgByteArray)
-            outputStream.flush()
-            outputStream.close()
+                //Conversões de tipo
+                val imgString: String = outputStream!!.toString()
+                val imgByteArray: ByteArray = imgString.toByteArray()
 
-            //Obtendo a resposta
-            val inputStream: InputStream = connection.inputStream
-            val rd: BufferedReader = BufferedReader(InputStreamReader(inputStream))
-            var line: String
-            val response: StringBuffer = StringBuffer()
-            while (rd.readLine() != null) {
-                line = rd.readText()
-                response.append(line)
-                response.append('\r')
+                //Enviando a imagem ao servidor
+                outputStream!!.write(imgByteArray)
+                outputStream!!.flush()
+                outputStream!!.close()
+
+                //Obtendo a resposta
+                val inputStream: InputStream = connection!!.inputStream
+                val rd: BufferedReader = BufferedReader(InputStreamReader(inputStream))
+                var line: String
+
+                response = StringBuffer()
+                while (rd.readLine() != null) {
+                    line = rd.readText()
+                    response.append(line)
+                    response.append('\r')
+                }
+
+                Log.i("AsyncTask", "Imagem sendo salva: " + Thread.currentThread().getName())
+                println("Imagem sendo salva!!!")
+                rd.close()
+
             }
-
-            Log.i("AsyncTask", "Imagem sendo salva: " + Thread.currentThread().getName())
-            println("Imagem sendo salva!!!")
-            rd.close()
-            return response.toString()
 
         }catch(error: MalformedURLException) {
             //Handles an incorrectly entered URL
@@ -107,6 +115,9 @@ class PostRequest : AsyncTask<ArrayList<Bitmap>, Void, String>() {
                 connection.disconnect()
             }
         }
+
+        return response.toString()
+
     }
 
     //Função chamado ao término do método doInBackground
