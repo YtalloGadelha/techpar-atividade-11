@@ -22,7 +22,6 @@ import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import java.util.*
 
-
 class MainActivity : AppCompatActivity() {
 
     lateinit var listView: ListView
@@ -69,7 +68,7 @@ class MainActivity : AppCompatActivity() {
 
         //Criação do objeto locationCallback
         locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult?) {
+            override fun onLocationResult(locationResult: LocationResult?){
                 locationResult ?: return
                 for (location in locationResult.locations){
                     mCurrentLocation = location
@@ -80,7 +79,7 @@ class MainActivity : AppCompatActivity() {
                     addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
 
                     if (addresses != null && addresses.size > 0 ) {
-                        var local = addresses[0].getAddressLine(0)
+                        val local = addresses[0].getAddressLine(0)
                         println(local)
 
                     }else{return }
@@ -188,7 +187,7 @@ class MainActivity : AppCompatActivity() {
     private fun verificarConexao(contexto: Context): Boolean {
 
         val conectado: Boolean
-        var aviso: String
+        val aviso: String
 
         //Pegando a conectividade do contexto o qual o metodo foi chamado
         val cm = contexto.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager

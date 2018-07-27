@@ -8,7 +8,6 @@ import java.net.HttpURLConnection
 import java.net.MalformedURLException
 import java.net.SocketTimeoutException
 import java.net.URL
-import java.util.*
 import kotlin.collections.ArrayList
 
 //Classe responsável por fazer a requisição POST em uma thread secundária para fazer o upload de uma imagem no servidor
@@ -39,12 +38,13 @@ class PostRequest : AsyncTask<ArrayList<Bitmap>, Void, String>() {
 
         var connection: HttpURLConnection? = null
 
+        //Criação de um arrayList a partir do array passado como parâmetro
         val array = p0.first()
 
         val tamanho = (array!!.size) - 1
 
         try {
-
+            //Laço necessário para que as fotos do array sejam enviadas ao servidor
             for(i in 0..tamanho){
 
                 //Criação da conexão
@@ -60,9 +60,8 @@ class PostRequest : AsyncTask<ArrayList<Bitmap>, Void, String>() {
                 //Criação do stream para depois fazer o envio da imagem
                 val outputStream: OutputStream? = connection!!.outputStream
 
-
+                //Pegando o bitmap a partir do arrayList
                 val bitmap = array!![i]
-
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
 
                 //Conversões de tipo
@@ -80,6 +79,7 @@ class PostRequest : AsyncTask<ArrayList<Bitmap>, Void, String>() {
                 var line: String
 
                 response = StringBuffer()
+
                 while (rd.readLine() != null) {
                     line = rd.readText()
                     response.append(line)
@@ -89,23 +89,19 @@ class PostRequest : AsyncTask<ArrayList<Bitmap>, Void, String>() {
                 Log.i("AsyncTask", "Imagem sendo salva: " + Thread.currentThread().getName())
                 println("Imagem sendo salva!!!")
                 rd.close()
-
             }
 
         }catch(error: MalformedURLException) {
-            //Handles an incorrectly entered URL
             println(error.stackTrace)
             return null
 
         }
         catch(error: SocketTimeoutException) {
-            //Handles URL access timeout.
             println(error.stackTrace)
             return null
 
         }
         catch (error: IOException) {
-            //Lida com os erros de entra e saída
             println(error.stackTrace)
             return null
 
@@ -117,7 +113,6 @@ class PostRequest : AsyncTask<ArrayList<Bitmap>, Void, String>() {
         }
 
         return response.toString()
-
     }
 
     //Função chamado ao término do método doInBackground
